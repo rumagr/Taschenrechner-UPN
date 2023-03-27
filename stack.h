@@ -6,7 +6,7 @@ int pop(int* res);
 int numElemente(int* res); 
 int peek(int stelle, int* res);
 int top(int* res);
-
+int resetStack(void); 
 
 
 #endif

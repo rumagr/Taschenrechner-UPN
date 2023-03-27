@@ -8,7 +8,7 @@
  * @brief   Taschenrechner in RPN
  ******************************************************************************
  */
-
+ 
 #include <stdio.h>
 #include "stm32f4xx_hal.h"
 #include "init.h"
@@ -23,6 +23,7 @@
 #include "ausgabe.h"
 #include "stack.h"
 #include "abfrage.h"
+#include "fehler.h"
 
 /**
   * @brief  Main program
@@ -31,14 +32,21 @@
   */
 int main(void)
 {
+	int fehler = 0; 
 	Terminal t; 
 	
 	initDisplay(&t);
 	
 	while(1)
 	{
-		wartenAufEingabe(&t); 
+	fehler = wartenAufEingabe(&t); 
+		
+		if(fehler)
+		{
+			fehlerbehandlung(fehler, &t); 
+		}
 	}
+	
 	
 }
 

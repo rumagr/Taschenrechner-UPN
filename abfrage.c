@@ -5,85 +5,113 @@
 #include "ausgabe.h"
 #include "operation.h"
 
-static int zahl = 0; 
-static int anzahlZeichen = 0; 
+static int zahl = 0;						//zwischengespeicherte Zahl
+static int anzahlZeichen = 0; 	//die länge der Zahl
 
+/**
+  * @brief  wartet auf eine Eingabe und führt dementsprechende Aktion aus.
+  * @param  Terminal* t - der Terminal
+  * @retval fehler - der Fehlercode
+  */
 int wartenAufEingabe(Terminal* t)
 {
-	char c = getKeyPadInput(); 
+	int fehler = 0; 							//speichert den Fehlercode
+	char c = getKeyPadInput(); 		//wartet auf den input
 	
-	if(c != 'e' && c != 'P' && c != 'p' && c != 'C' && c != 'd' && c != 'r' )
+	if(isdigit(c) || c == '+' || c == '-' || c == '/' || c == '*')	//druckt alle Zahlen und Rechenoperatoren
 	{
 	zeichenDarstellen(c,t);
 	}
 	
-	if(isdigit(c))
+	if(isdigit(c))	//wenn ein ziffer eingegeben wird -> aktualisiere die Zahl
 	{
-		zahlAktualisieren(c);  
+		fehler = zahlAktualisieren(c); 
 	}
-	else
+	else //sonst führe Operationen aus
 	{
-		switch(c)
+		if(speichern()) //speichert die zwischengespeicherte Zahl ab.
+		{
+			return 1; //stackoverflow
+		}
+		
+		if(!(c == 'e' || c == 'C' || c == 'd' || c == 'r'))
+		{
+		printTerm("\n",t); 
+		}
+		
+		switch(c)	//ruft operation auf
 		{
 			case '+':
-				speichern();
-				plus(t);
+				fehler = plus(t);
 				break; 
 			case '-':
-				speichern();
-				minus(t);
+				fehler = minus(t);
 				break;
 			case '*':
-				speichern();
-				mal(t);
+				fehler = mal(t);
 				break;
 			case '/':
-				speichern();
-				geteilt(t);
+				fehler = geteilt(t);
 				break;
 			case 'P': 
-				speichern();
 				gesamtenStackDrucken(t); 
 				break;
 			case 'p': 
-				speichern();
-				obersterWert(t);
+				fehler = obersterWert(t);
 				break;
 			case 'C': 
-				speichern();
 				allesLoeschen(); 
 				break;
 			case 'd': 
-				speichern();
-				dublizieren(); 
+				fehler = dublizieren(); 
 				break;
 			case 'r':
-				speichern();	
-				vertausche();
+				fehler = vertausche();
 				break; 
-			case 'e':
-				speichern();
-				zeichenDarstellen(' ',t);
+			case 'e': 
+				zeichenDarstellen(' ',t); 
 				break;
 		}
 	}
-	return 0; 
+	return fehler; //gibt fehlercode zurück
 }
 
-
+/**
+  * @brief  Aktualisiert die zwischengespeicherte Zahl.
+  * @param  char c - die anzuhängende Ziffer
+  * @retval 3 - wenn die Zahl zu lang wird
+  */
 int zahlAktualisieren(char c)
 {
+	long long temp = zahl;  
+	temp *= 10; 
+	temp += c - '0';  //neue zahl wird als 64 bit variable gespeichert
+	
 	zahl *= 10; 
-	zahl += c - '0'; 
+	zahl += c - '0'; //neue zahl wird in der int variable gespeichert
+	
 	++anzahlZeichen; 
+	if(temp > zahl) //wenn temp > zahl ist, ist ein überlauf entstanden
+	{								//zahl und anzahlZeichen wird reseted und der fehlercode wird zurückgegeben. 
+			zahl = 0; 
+			anzahlZeichen = 0; 
+			return 3; 
+	}
 	return 0; 
 }
-
+/**
+  * @brief  Pushed die aktuelle Zahl auf den Stack
+  * @param  None
+  * @retval 1 - bei stackoverflow
+  */
 int speichern(void)
 {
-	if(anzahlZeichen != 0)
+	if(anzahlZeichen != 0) //falls bisher Zeichen eingegeben wurde 
+	{											// -> push die zahl und reset zahl und anzahl Zeichen
+	if(push(zahl))
 	{
-	push(zahl);
+		return 1; 					 //return 1 - bei stackoverflow 
+	}
 	zahl = 0;
 	anzahlZeichen = 0; 
 	}

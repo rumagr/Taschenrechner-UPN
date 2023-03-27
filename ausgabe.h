@@ -15,5 +15,6 @@
 int initDisplay(Terminal* t); 
 int zeichenDarstellen(char c, Terminal* t); 
 int zahlDarstellen(int i, Terminal* t); 
+int reset(void); 
 
 #endif
